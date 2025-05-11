@@ -37,6 +37,9 @@ An app launcher for [Waybar](https://github.com/Alexays/Waybar), made with Rust.
           // Button text format
           // Placeholders: {icon} {name}
           "format": "{icon}",
+
+          // Button tooltip format
+          "format-tooltip": "{name}"
       }
       ```
    3. Add CSS (so they are looking nice).

@@ -1,9 +1,6 @@
 #![warn(clippy::pedantic)]
 
-use std::{
-    collections::BTreeMap,
-    process::Command,
-};
+use std::{collections::BTreeMap, process::Command};
 
 use dynfmt2::{Format, SimpleCurlyFormat};
 use serde::Deserialize;
@@ -18,7 +15,9 @@ use waybar_cffi::{
 struct Config {
     apps: Vec<App>,
     spacing: Option<i32>,
+
     format: Option<String>,
+    format_tooltip: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -41,6 +40,11 @@ impl Launcher {
         container.set_spacing(config.spacing.unwrap_or(0));
 
         let format = config.format.as_ref().map_or("{icon}", |f| f.as_str());
+        let format_tooltip = config
+            .format_tooltip
+            .as_ref()
+            .map_or("{name}", |f| f.as_str());
+
         for app in &config.apps {
             let mut args = BTreeMap::new();
 
@@ -52,10 +56,16 @@ impl Launcher {
             args.insert("name", name);
 
             let label = SimpleCurlyFormat
-                .format(format, args)
+                .format(format, &args)
                 .expect("invalid format provided");
+            let label_tooltip = SimpleCurlyFormat
+                .format(format_tooltip, &args)
+                .expect("invalid format-tooltip provided");
 
-            let app_button = gtk::Button::with_label(&label);
+            let app_button = gtk::Button::builder()
+                .label(label)
+                .tooltip_text(label_tooltip)
+                .build();
             app_button.style_context().add_class("flat");
 
             let command = app.command.clone();
