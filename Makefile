@@ -5,7 +5,7 @@ CARGO := cargo
 install-dev: target/debug/liblauncher.so
 	cp target/debug/liblauncher.so ~/.config/waybar/custom
 
-install: target/debug/liblauncher.so
+install: target/release/liblauncher.so
 	cp target/release/liblauncher.so ~/.config/waybar/custom
 
 fix:
