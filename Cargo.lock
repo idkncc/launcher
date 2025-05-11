@@ -517,7 +517,7 @@ version = "0.1.0"
 dependencies = [
  "dynfmt2",
  "glib 0.20.9",
- "indexmap",
+ "ordermap",
  "serde",
  "waybar-cffi",
 ]
@@ -548,6 +548,16 @@ name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
+
+[[package]]
+name = "ordermap"
+version = "0.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d31b8b7a99f71bdff4235faf9ce9eada0ad3562c8fbeb7d607d9f41a6ec569d"
+dependencies = [
+ "indexmap",
+ "serde",
+]
 
 [[package]]
 name = "pango"

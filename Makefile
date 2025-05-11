@@ -8,6 +8,14 @@ install-dev: target/debug/liblauncher.so
 install: target/debug/liblauncher.so
 	cp target/release/liblauncher.so ~/.config/waybar/custom
 
+fix:
+	cargo clippy --fix --allow-dirty --allow-staged
+
+format:
+	cargo fmt
+
+# files/dirs
+
 target/debug/liblauncher.so: src/*
 	$(CARGO) build
 

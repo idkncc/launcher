@@ -1,26 +1,32 @@
 #![warn(clippy::pedantic)]
 
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::BTreeMap,
     process::Command,
 };
 
 use dynfmt2::{Format, SimpleCurlyFormat};
-use indexmap::IndexMap;
 use serde::Deserialize;
 use waybar_cffi::{
     InitInfo, Module,
-    gtk::{self, prelude::*},
+    gtk::{self, gio, prelude::*},
     waybar_module,
 };
 
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct Config {
-    apps: IndexMap<String, String>,
+    apps: Vec<App>,
     spacing: Option<i32>,
     format: Option<String>,
-    format_icons: Option<HashMap<String, String>>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct App {
+    command: String,
+    name: Option<String>,
+    icon: Option<String>,
 }
 
 struct Launcher;
@@ -35,16 +41,15 @@ impl Launcher {
         container.set_spacing(config.spacing.unwrap_or(0));
 
         let format = config.format.as_ref().map_or("{icon}", |f| f.as_str());
-        for (app_name, app_command) in config.apps.clone() {
+        for app in &config.apps {
             let mut args = BTreeMap::new();
 
-            let icon = config
-                .format_icons
-                .as_ref()
-                .and_then(|f| f.get(&app_name))
-                .unwrap_or(&app_name);
-            args.insert("icon", icon);
-            args.insert("name", &app_name);
+            let name = app.name.as_ref().map_or_else(
+                || app.command.split(' ').next().unwrap_or("???"),
+                |icon| icon.as_str(),
+            );
+            args.insert("icon", app.icon.as_ref().map_or(name, |icon| icon.as_str()));
+            args.insert("name", name);
 
             let label = SimpleCurlyFormat
                 .format(format, args)
@@ -52,15 +57,24 @@ impl Launcher {
 
             let app_button = gtk::Button::with_label(&label);
             app_button.style_context().add_class("flat");
-            app_button.connect_clicked(move |_| {
-                let mut components: Vec<&str> = app_command.split(' ').collect();
-                let command = components.remove(0);
-                let args = components.as_slice();
 
-                Command::new(command)
-                    .args(args)
-                    .spawn()
-                    .unwrap_or_else(|_| panic!("{command} failed to start"));
+            let command = app.command.clone();
+            app_button.connect_clicked(move |_| {
+                let command = command.clone();
+                gio::spawn_blocking(move || {
+                    let mut components: Vec<&str> = command.split(' ').collect();
+                    let command = components.remove(0);
+                    let args = components.as_slice();
+
+                    _ = Command::new(command)
+                        .args(args)
+                        .spawn()
+                        .unwrap_or_else(|_| panic!("{command} failed to start"))
+                        .wait()
+                        .inspect_err(|err| {
+                            eprint!("Command \"{command}\" failed with error: {err}");
+                        });
+                });
             });
 
             container.add(&app_button);
