@@ -8,7 +8,7 @@ An app launcher for [Waybar](https://github.com/Alexays/Waybar), made with Rust.
 
 1. Install Rust, Waybar, Make
 2. Prepare environment
-   2. Add to your waybar config:
+   1. Add to your waybar config:
       ```jsonc
       "cffi/launcher": {
           "module_path": "/home/<yo_home_folder>/.config/waybar/custom/liblauncher.so",
@@ -42,7 +42,7 @@ An app launcher for [Waybar](https://github.com/Alexays/Waybar), made with Rust.
           "format-tooltip": "{name}"
       }
       ```
-   3. Add CSS (so they are looking nice).
+   2. Add to your `style.css`.
       Here's my styles, that I use:
       ```css
       /* this is the box with buttons (apps) */
